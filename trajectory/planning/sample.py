@@ -21,8 +21,8 @@ def _sample_inner(logits, top_k, temperature, greedy=False):
 
     return idx
 
-
-def sample(model, context, steps, top_k=None, model_state=None, temperature=1.0, greedy=False):
+@profile
+def sample(model, context, steps, top_k=None, model_state=None, temperature=1.0, greedy=True):
     batch_size = context.shape[0]
 
     raw_logits = torch.zeros(batch_size, steps, model.vocab_size, device=context.device)

@@ -39,25 +39,26 @@ def beam_plan(model, discretizer, context, steps, beam_width, sample_expand, dis
         plan, model_state, logits = sample(
             model, plan, model_state=model_state, steps=2, top_k=k_reward, temperature=temperature
         )
-        probs = F.softmax(logits, dim=-1)
-        reward_and_value = discretizer.expectation(probs, subslice=[model.transition_dim - 2, model.transition_dim])
+        # probs = F.softmax(logits, dim=-1)
+        # reward_and_value = discretizer.expectation(probs, subslice=[model.transition_dim - 2, model.transition_dim])
 
-        rewards[:, t:t + 2] = reward_and_value
+        # rewards[:, t:t + 2] = reward_and_value
 
-        values = (rewards * discounts).sum(-1)
-        values, idxs = torch.topk(values, k=beam_width)
+        # values = (rewards * discounts).sum(-1)
+        # values, idxs = torch.topk(values, k=beam_width)
 
-        plan, rewards = plan[idxs], rewards[idxs]
-        model_state = [s[idxs] for s in model_state]
+        # plan, rewards = plan[idxs], rewards[idxs]
+        # model_state = [s[idxs] for s in model_state]
 
-        if t < steps - 1:
+        # if t < steps - 1:
             # sample obs unless last step
-            plan, model_state, _ = sample(
-                model, plan, model_state=model_state, steps=model.observation_dim, top_k=k_obs, temperature=temperature
-            )
+        plan, model_state, _ = sample(
+            model, plan, model_state=model_state, steps=model.observation_dim, top_k=k_obs, temperature=temperature
+        )
 
-    best_idx = torch.argmax(values)
-    best_plan = plan[best_idx, context.shape[1]:]
+    # best_idx = torch.argmax(values)
+    # best_plan = plan[best_idx, context.shape[1]:]
+    best_plan = plan[0, context.shape[1]:]
 
     return best_plan
 

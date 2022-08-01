@@ -38,7 +38,8 @@ def rollout(
         device="cpu"
     ):
     assert plan_every <= beam_steps, "too short planning horizon"
-    os.makedirs(render_path, exist_ok=True)
+    if render_path is not None:
+        os.makedirs(render_path, exist_ok=True)
 
     transition_dim, obs_dim, act_dim = model.transition_dim, model.observation_dim, model.action_dim
     # trajectory of tokens for model action planning
@@ -74,6 +75,7 @@ def rollout(
         action = discretizer.decode(action_tokens.cpu().numpy(), subslice=(obs_dim, obs_dim + act_dim)).squeeze()
 
         obs, reward, done, _ = env.step(action)
+        env.render()
 
         total_reward += reward
         pbar.set_postfix({'Reward': total_reward})
@@ -160,6 +162,7 @@ def vec_rollout(
         action = discretizer.decode(action_tokens.cpu().numpy(), subslice=(obs_dim, obs_dim + act_dim))
 
         obs, reward, done, _ = vec_env.step(action)
+        vec_env.render()
 
         obs_tokens = discretizer.encode(obs[~dones], subslice=(0, obs_dim))
         reward_tokens = discretizer.encode(

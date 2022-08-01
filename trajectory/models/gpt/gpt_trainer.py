@@ -140,7 +140,8 @@ class GPTTrainer:
             max_steps=vec_env.envs[0].max_episode_steps,
             device=self.device
         )
-        scores = [vec_env.envs[0].get_normalized_score(r) for r in rewards]
+        # scores = [vec_env.envs[0].get_normalized_score(r) for r in rewards]
+        scores = [r for r in rewards]
 
         model.train()
         return np.mean(rewards), np.std(rewards), np.mean(scores), np.std(scores)
