@@ -27,6 +27,9 @@ def _sample_inner(logits, top_k, temperature, greedy=False):
 
     return idx
 
+def _sample_inner_deterministic(logits, top_k, temperature, greedy=False):
+    return torch.topk(logits, k=1, dim=-1)[-1]
+
 # @profile
 def sample(model, context, steps, top_k=None, model_state=None, temperature=1.0, greedy=True):
     batch_size = context.shape[0]
@@ -55,7 +58,8 @@ def sample(model, context, steps, top_k=None, model_state=None, temperature=1.0,
 
         logits, model_state = model(context[:, -1:], state=model_state)
 
-        sampled_tokens = _sample_inner(logits[:, -1, :], top_k, temperature, greedy)
+        # sampled_tokens = _sample_inner(logits[:, -1, :], top_k, temperature, greedy)
+        sampled_tokens = _sample_inner_deterministic(logits[:, -1, :], top_k, temperature, greedy)
         context = torch.hstack([context, sampled_tokens])
 
         raw_logits[:, t] = logits[:, -1, :]
