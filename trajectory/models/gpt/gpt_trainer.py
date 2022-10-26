@@ -38,6 +38,7 @@ class GPTTrainer:
             action_weight=1,
             value_weight=1,
             reward_weight=1,
+            observation_weight=1,
             save_every=5,
             checkpoints_path=None,
             device="cpu"
@@ -49,6 +50,7 @@ class GPTTrainer:
         self.clip_grad = clip_grad
         # loss params
         self.action_weight = action_weight
+        self.observation_weight = observation_weight
         self.reward_weight = reward_weight
         self.value_weight = value_weight
         # scheduler params
@@ -106,7 +108,7 @@ class GPTTrainer:
         if self.action_weight != 1 or self.value_weight != 1 or self.reward_weight != 1:
             n_states = int(np.ceil(tokens.shape[1] / model.transition_dim))
             weights = torch.cat([
-                torch.ones(model.observation_dim, device=tokens.device),
+                torch.ones(model.observation_dim, device=tokens.device) * self.observation_weight,
                 torch.ones(model.action_dim, device=tokens.device) * self.action_weight,
                 torch.ones(1, device=tokens.device) * self.reward_weight,
                 torch.ones(1, device=tokens.device) * self.value_weight,
