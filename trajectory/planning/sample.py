@@ -5,7 +5,13 @@ import torch.nn.functional as F
 
 from trajectory.utils.common import top_k_logits, round_to_multiple
 
-# @profile
+
+
+def _sample_inner_simple(logits, top_k, temperature, greedy=False):
+    # logits = logits / temperature
+    idx = torch.topk(logits, k=1, dim=-1)[-1]
+    return idx
+
 def _sample_inner(logits, top_k, temperature, greedy=False):
     logits = logits / temperature
 
@@ -32,7 +38,7 @@ def sample(model, context, steps, top_k=None, model_state=None, temperature=1.0,
 
     if model_state is None:
         logits, model_state = model(context, state=model_state)
-        sampled_tokens = _sample_inner(logits[:, -1, :], top_k, temperature, greedy)
+        sampled_tokens = _sample_inner_simple(logits[:, -1, :], top_k, temperature, greedy)
         context = torch.hstack([context, sampled_tokens])
 
         raw_logits[:, 0] = logits[:, -1, :]

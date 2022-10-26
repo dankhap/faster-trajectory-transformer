@@ -127,6 +127,9 @@ def vec_rollout(
     transition_dim, obs_dim, act_dim = model.transition_dim, model.observation_dim, model.action_dim
     # some value to place, it will be masked out in the attention
     value_placeholder = np.ones((vec_env.num_envs, 1)) * value_placeholder
+    real_obs = []
+    predicted_obs = []
+
 
     # trajectory of tokens for model action planning
     # +1 just to avoid index error while updating context on the last step
@@ -158,10 +161,16 @@ def vec_rollout(
             plan_buffer = plan_buffer[:, transition_dim:]
 
         action_tokens = plan_buffer[:, :act_dim]
+        pred_obs_tokens = plan_buffer[:, act_dim + 2: act_dim +2 + obs_dim]
         action = discretizer.decode(action_tokens.cpu().numpy(), subslice=(obs_dim, obs_dim + act_dim))
+        pred_obs = discretizer.decode(pred_obs_tokens.cpu().numpy(), subslice=(0, obs_dim))
 
         obs, reward, done, _ = vec_env.step(action)
         vec_env.render()
+        #compare real and pred observations
+        real_obs.append(obs)
+        pred_obs.append(pred_obs)
+
 
         obs_tokens = discretizer.encode(obs[~dones], subslice=(0, obs_dim))
         reward_tokens = discretizer.encode(
